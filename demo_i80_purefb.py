@@ -9,6 +9,8 @@ display_power_pin     = Pin(15, Pin.OUT, value = 1)
 display_rd_pin        = Pin(9,  Pin.OUT, value = 1)
 display_reset_pin     = Pin(5,  Pin.OUT, value = 1)
 display_backlight_pin = Pin(38, Pin.OUT, value = 0)
+display_backlight_pwm = PWM(display_backlight_pin,
+                           freq = 5000, duty_u16 = int(0x0))
 
 display = st7789.ST7789(
     I80Bus(
@@ -19,35 +21,10 @@ display = st7789.ST7789(
     width = 170,
     height = 320,
     reset = display_reset_pin,
-    #backlight = display_backlight_pin,
+    backlight = display_backlight_pwm,
     rotation = 3,
-    color_order = st7789.BGR,
     swap_bytes = True
-    
 )
-
-# A 'Dimmer' Class to control the backlight via PWM
-# - Useful if a PWM pin is available for backlight
-#   the driver only provdes basic 'On'/'Off' control.
-class dimmer():
-    def __init__(self, ratio = 1, freq = 5000):
-        self._freq = freq
-        self._ratio = ratio
-        self._ratio = max(0, min(1, self._ratio))
-        self.pwm = PWM(display_backlight_pin,
-                   freq = self._freq,
-                   duty_u16 = int(0xffff * self._ratio))
-
-    def on(self, ratio = None):
-        self._ratio = self._ratio if ratio is None else ratio
-        self._ratio = max(0, min(1, self._ratio))
-        self.pwm.init(freq=self._freq,
-                      duty_u16=int(self._ratio * 0xffff))
-    def off(self):
-        self.pwm.deinit()
-
-# turn on display backlight using PWM, default full brightness
-backlight = dimmer(1)
 
 # A 'palette' class with 20 colors and helpers
 class palette():
