@@ -1,5 +1,6 @@
 import framebuf, struct
 from time import sleep_ms
+from machine import PWM
 
 # 7789 direct framebuffer driver
 
@@ -55,7 +56,7 @@ _BIT1 = const(0x02)
 _BIT0 = const(0x01)
 
 # Rotation tables
-#   (madctl, width, height, xstart, ystart, needs_swap)[rotation % 4]
+#   (madctl, width, height, xstart, ystart)[rotation % 4]
 
 _DISPLAY_240x320 = (
     (0x00, 240, 320, 0, 0),
@@ -118,9 +119,6 @@ _ST7789_INIT_CMDS = (
     ( b'\x29', b'\x00', 120)                # Turn on the display
 )
 
-# fmt: on
-
-
 def color565(red, green=0, blue=0):
     """
     Convert red, green and blue values (0-255) into a 16-bit 565 encoding.
@@ -131,7 +129,7 @@ def color565(red, green=0, blue=0):
 
 def swap_bytes(color):
     """
-    this just flips the left and right byte in the 16 bit color.
+    this just flips the left and right bytes in the 16 bit color word.
     """
     return ((color & 255) << 8) + (color >> 8)
 
@@ -146,17 +144,23 @@ class ST7789(framebuf.FrameBuffer):
         height (int): display height **Required**
         reset (pin): reset pin
         cs (pin): cs pin
-        backlight(pin): backlight pin (can be a pwm pin)   <-- PWM TO DO
-        brightness (float 0->1): Initial brightness level  <-- Needs method() too
-        rotation (int):
-          - 0-Portrait
+        backlight (pin) or (pwm): backlight pin
+          - can be gpio (on/off) or PWM
+          - specify 'None' if controlled elsewhere, default
+        bright (value): Initial brightness level
+          - a (float) between 0 and 1 if backlight is pwm
+          - otherwise (bool) or (int) for pin value()
+          - defaults to '1' (fully on)
+        rotation (int): Orientation of display
+          - 0-Portrait, default
           - 1-Landscape
           - 2-Inverted Portrait
           - 3-Inverted Landscape
         color_order (int):
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
-
+        swap_bytes (bool):
+          - Used when MSB/LSB of the color (16-bit word) is reversed
 
     """
 
@@ -168,7 +172,7 @@ class ST7789(framebuf.FrameBuffer):
         reset=None,
         cs=None,
         backlight=None,
-        brightness=1,
+        bright=1,
         rotation=0,
         color_order=BGR,
         swap_bytes=True,
@@ -176,56 +180,50 @@ class ST7789(framebuf.FrameBuffer):
         """
         Initialize display.
         """
-        self.rotations = self._find_rotations(width, height)
-        if not self.rotations:
-            supported_displays = ", ".join(
-                [f"{display[0]}x{display[1]}" for display in _SUPPORTED_DISPLAYS]
-            )
-            raise ValueError(
-                f"Unsupported {width}x{height} display. Supported displays: {supported_displays}"
-            )
-
-        #init the framebuffer
-        self.buffer = bytearray(height*width*2)
-        if rotation == 1 or rotation == 3:
-            super().__init__(self.buffer, height, width, framebuf.RGB565)
-        else:
-            super().__init__(self.buffer, width, height, framebuf.RGB565)
-        self.width = width
-        self.height = height
-        self.xstart = 0
-        self.ystart = 0
+        # Bus and IO pins
         self.bus = bus
         self.reset = reset
         self.cs = cs
         self.backlight = backlight
-        self._rotation = rotation % 4
+        # Check display is known and get rotation table
+        self.rotations = self._find_rotations(width, height)
+        if not self.rotations:
+            supported_displays = ", ".join(
+                [f"{display[0]}x{display[1]}" for display in _SUPPORTED_DISPLAYS])
+            raise ValueError(
+                f"Unsupported {width}x{height} display. Supported displays: {supported_displays}")
+        # Initial dimensions and offsets, will be overridden when rotation applied
+        self.width = width
+        self.height = height
+        self.xstart = 0
+        self.ystart = 0
+        # Colors
         self.color_order = color_order
+        self.swap_bytes = swap_bytes
+        # the framebuffer memory
+        self.buffer = bytearray(height*width*2)
+        # init the st7789
         self.init_cmds = _ST7789_INIT_CMDS
         self.hard_reset()
         # yes, twice, once is not always enough
         self.init(self.init_cmds)
         self.init(self.init_cmds)
-        # Rotoation
+        # Initial rotation
+        self._rotation = rotation % 4
+        # Create the framebuffer for the correct rotation
+        if self._rotation % 2 == 0:
+            super().__init__(self.buffer, self.width, self.height, framebuf.RGB565)
+        else:
+            super().__init__(self.buffer, self.height, self.width, framebuf.RGB565)
+        # Apply rotation
         self.rotation(self._rotation)
-        # Write Window
-        self._write(_ST7789_CASET,
-            struct.pack(_ENCODE_POS, self.xstart, self.width + self.xstart - 1))
-        self._write(_ST7789_RASET,
-            struct.pack(_ENCODE_POS, self.ystart, self.height + self.ystart - 1))
-        self._write(_ST7789_RAMWR)
-        # Color LSB/MSB swapping
-        self.swap_bytes = swap_bytes
         # Blank display and turn on backlight
-        self.fill(0x0)
+        self.fill(BLACK)
         self.show()
-        if backlight is not None:
-            backlight.value(brightness)
+        self.brightness(bright)
 
     def _find_rotations(self, width, height):
-        """
-        Find the correct rotation for our display or return None
-        """
+        # Find the correct rotation for our display or return None
         for display in _SUPPORTED_DISPLAYS:
             if display[0] == width and display[1] == height:
                 return display[2]
@@ -300,38 +298,63 @@ class ST7789(framebuf.FrameBuffer):
                 - 1-Landscape
                 - 2-Inverted Portrait
                 - 3-Inverted Landscape
-
-            custom_rotations can have any number of rotations
         """
+        # do not allow going from portrait to landscape
+        if (rotation % 2) != (self._rotation % 2):
+            # todo: test on a square display if this still applies!
+            return
+
+        # find rotation parameters and send command
         rotation %= len(self.rotations)
-        self._rotation = rotation
-        (
-            madctl,
+        (   madctl,
             self.width,
             self.height,
             self.xstart,
-            self.ystart,
-        ) = self.rotations[rotation]
-
+            self.ystart, ) = self.rotations[rotation]
         if self.color_order == BGR:
             madctl |= _ST7789_MADCTL_BGR
         else:
-            madctl |= _ST7789_MADCTL_RGB
-
+            madctl &= ~_ST7789_MADCTL_BGR
         self._write(_ST7789_MADCTL, bytes([madctl]))
-        # We should really clean and re-create framebuffer if orientation
-        # changes and new width/height != old width/height, + set new self.width/height
+        # Set window for writing into
+        self._write(_ST7789_CASET,
+            struct.pack(_ENCODE_POS, self.xstart, self.width + self.xstart - 1))
+        self._write(_ST7789_RASET,
+            struct.pack(_ENCODE_POS, self.ystart, self.height + self.ystart - 1))
+        self._write(_ST7789_RAMWR)
+        self._rotation = rotation
+
+    def brightness(self, bright):
+        """
+        Set backlight value
+
+        Args:
+            bright(value): Brightness value
+              - for PWM this is a (float) between 0 and 1
+              - Otherwise a valid GPIO pin setting (bool)
+        """
+        if self.backlight is None:
+            return
+        if type(self.backlight) is PWM:
+            bright = max(0, min(1, bright))
+            self.backlight.init(duty_u16=int(bright * 0xffff))
+        else:
+            self.backlight.value(bright)
 
     def _write(self, cmd=None, data=None):
-        # The I80 bus driver expects an int() not byte()
+        # The I80 bus driver expects an int() not byte() for 'cmd'
         if cmd is not None:
             cmd = cmd[0]
         self.bus.send(cmd, data)
         
     def show(self):
+        """
+        Put the current framebuffer onto the screen
+        """
         self._write(None, self.buffer)
         
-    def _sc(self, c):   # aka 'swap colors'
+    def _sc(self, c):
+        # Internal function to swap color word LSB and MSB
         return swap_bytes(c) if self.swap_bytes else c
 
     # Now a super() for all the framebuffer methods that use colors
@@ -343,8 +366,9 @@ class ST7789(framebuf.FrameBuffer):
     def pixel(self, x, y, c=None):
         if c is not None:
             c = self._sc(c)
-        super().pixel(text, x, y, c)
-        # Swap the return????                     <<<------ TEST
+            super().pixel(x, y, c)
+        else:
+            return self._sc(super().pixel(x, y))
         
     def hline(self, x, y, w, c):
         super().hline(x, y, w, self._sc(c))
@@ -355,16 +379,16 @@ class ST7789(framebuf.FrameBuffer):
     def line(self, x1, y1, x2, y2, c):
         super().line(x1, y1, x2, y2, self._sc(c))
 
-    def rect(self, x, y, w, h, c, f=None):
+    def rect(self, x, y, w, h, c, f=False):
         super().rect(x, y, w, h, self._sc(c), f)
 
     def fill_rect(self, x, y, w, h, c):
         super().rect(x, y, w, h, self._sc(c), True)
         
-    def ellipse(self, x, y, xr, yr, c, f=None, m=None):
+    def ellipse(self, x, y, xr, yr, c, f=False, m=0xf):
         super().ellipse(x, y, xr, yr, self._sc(c), f, m)
 
-    def poly(self, x, y, coords, c, f=None):
+    def poly(self, x, y, coords, c, f=False):
         super().poly(x, y, coords, self._sc(c), f)
 
     def text(self, text, x, y, c=WHITE):
