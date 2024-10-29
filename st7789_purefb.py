@@ -129,7 +129,7 @@ def color565(red, green=0, blue=0):
 
 def swap_bytes(color):
     """
-    this just flips the left and right bytes in the 16 bit color word.
+    Flips the left and right bytes in the 16 bit color word.
     """
     return ((color & 255) << 8) + (color >> 8)
 
@@ -302,7 +302,7 @@ class ST7789(framebuf.FrameBuffer):
 
     """
         Following functions all superclass the framebuffer
-        so that color bytes can be swapped if required
+        so that color bytes can be swapped as needed
     """
     def fill(self, c):
         super().fill(self._sc(c))
@@ -373,7 +373,7 @@ class ST7789_I80(ST7789):
         width,
         height,
         reset=None,
-        cs=None,    # <------ find from I80 device?
+        cs=None,
         backlight=None,
         bright=1,
         rotation=0,
@@ -382,8 +382,7 @@ class ST7789_I80(ST7789):
     ):
         self.i80 = i80
         self.reset = reset
-        self.cs = cs    # <------ find from I80 device?
-        self.dc = dc
+        self.cs = cs
         super().__init__(width, height, backlight, bright, rotation, color_order, swap_bytes)
         
     def _write(self, cmd=None, data=None):
