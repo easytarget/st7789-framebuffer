@@ -60,6 +60,7 @@ This driver supports:
 
 from math import sin, cos, floor, pi, sqrt, pow
 import framebuf, struct, array
+from machine import PWM
 
 #
 # This allows sphinx to build the docs
@@ -422,14 +423,11 @@ class ST7789:
             self.fbuf = framebuf.FrameBuffer(self._buf, height, width, framebuf.RGB565)
         else:
             self.fbuf = framebuf.FrameBuffer(self._buf, width, height, framebuf.RGB565)
-        
+
         self.physical_width = self.width = width
         self.physical_height = self.height = height
         self.xstart = 0
         self.ystart = 0
-        self.bus = bus
-        self.reset = reset
-        self.cs = cs
         self.backlight = backlight
         self._rotation = rotation % 4
         self.color_order = color_order
@@ -1243,6 +1241,7 @@ class ST7789_I80(ST7789):
           - BGR: Blue, Green, Red
         swap_bytes (bool):
           - Leave enabled, the st7789 uses LSB byte order for color words
+
     """
     def __init__(
         self,
@@ -1255,12 +1254,15 @@ class ST7789_I80(ST7789):
         bright=1,
         rotation=0,
         color_order=BGR,
-        swap_bytes=True,
+        custom_init=None,
+        custom_rotations=None,
+
     ):
         self.i80 = i80
         self.reset = reset
         self.cs = cs
-        super().__init__(width, height, backlight, bright, rotation, color_order, swap_bytes)
+        super().__init__(width, height, backlight, bright, rotation, color_order,
+                         custom_init, custom_rotations)
 
     def _write(self, cmd=None, data=None):
         """I80 bus write to device: command and data."""
@@ -1326,13 +1328,15 @@ class ST7789_SPI(ST7789):
         bright=1,
         rotation=0,
         color_order=BGR,
-        swap_bytes=True,
+        custom_init=None,
+        custom_rotations=None,
     ):
         self.i80 = i80
         self.reset = reset
         self.cs = cs
         self.dc = dc
-        super().__init__(width, height, backlight, bright, rotation, color_order, swap_bytes)
+        super().__init__(width, height, backlight, bright, rotation, color_order,
+                         custom_init, custom_rotations)
 
     def _write(self, command=None, data=None):
         """SPI write to the device: commands and data."""
