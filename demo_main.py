@@ -1,8 +1,9 @@
 # Main demo code
 # assumes 'display' and 'pallette' were created by the invoker.
 
-from sys import path, implementation
+from sys import path, implementation, platform
 from machine import Pin
+from time import time
 import random
 
 path.append('demofonts')
@@ -14,10 +15,14 @@ def do_demo(display, palette):
     display.fill(palette.BLACK)
     display.show()
 
-    # GPIO-0 is found as the 'boot' button on most devboards 
+    # GPIO-0 is found as the 'boot' button on most devboards
     button = Pin(0, Pin.IN)
+    button_initial = button.value()
+    # default 10 seconds timeout
+    end = time() + 10
 
-    while button.value() != 0:
+    print('boxlines')
+    while (button.value() == button_initial) and (time() <= end):
         color = palette.color565(
             random.getrandbits(8), random.getrandbits(8), random.getrandbits(8)
         )
@@ -45,11 +50,14 @@ def do_demo(display, palette):
         )
         display.show()
 
+    print('prompt')
     display.fill(palette.BLACK)
     prompt = ezFBfont(display, promptfont, fg = palette.swap_bytes(palette.WHITE))
     cons = ezFBfont(display, consolefont, fg = palette.swap_bytes(palette.SILVER))
 
-    ver = '{}.{}.{}'.format(*implementation.version)
-    prompt.write('LillyGo T-Display Touch', 5, 5)
-    cons.write('ESP32-S3\nMicropython: {}\n>>> _'.format(ver), 5, 35)
+    plat = platform.upper()
+    ver = '{}.{}.{} {}'.format(*implementation.version)
+
+    prompt.write('st7789 framebuffer', 5, 5)
+    cons.write('{}\nMicropython: {}\n>>> _'.format(plat, ver), 5, 35)
     display.show()
