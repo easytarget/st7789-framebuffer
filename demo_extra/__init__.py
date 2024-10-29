@@ -1,5 +1,6 @@
 # Main demo code
 # assumes 'display' and 'pallette' were created by the invoker.
+# (C) Owen Carter 2024; released 'as-is', no liabaility conceeded
 
 from sys import path, implementation, platform
 from machine import Pin
@@ -11,7 +12,7 @@ from ezFBfont import ezFBfont
 import ezFBfont_23_spleen_12x24_ascii as promptfont
 import ezFBfont_17_helvR12_ascii as consolefont
 
-def do_demo(display, palette):
+def run_demo(display, palette, runtime=10000):
     display.fill(palette.BLACK)
     display.show()
 
@@ -20,7 +21,7 @@ def do_demo(display, palette):
     button_initial = button.value()
 
     # default 10 seconds timeout
-    end = ticks_ms() + 10000
+    end = ticks_ms() + runtime
 
     print('boxlines')
     while (button.value() == button_initial) and (ticks_ms() <= end):

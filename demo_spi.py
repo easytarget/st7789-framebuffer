@@ -38,7 +38,7 @@ display_dc_pin        = Pin(27, Pin.OUT, value = 1)
 
 display_backlight_pin = Pin(15, Pin.OUT, value = 0)
 display_backlight_pwm = PWM(display_backlight_pin,
-                           freq = 5000, duty_u16 = int(0x0))
+                            duty_u16 = int(0x0))
 
 display = st7789.ST7789_SPI(
     SPI(2,   # using hardware SPI#2 on esp32, adjust/remove as needed
