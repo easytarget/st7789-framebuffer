@@ -1,7 +1,16 @@
-import st7789_purefb as st7789
+# HOI!
+# YOU MUST UNCOMMENT ONE (and only one..) OF THE DRIVERS BELOW:
+
+#import st7789_purefb as st7789
+#import st7789_fb_plus as st7789
+
+"""
+    st7789 framebuffer driver demo for ST7789 SPI displays
+    https://github.com/easytarget/st7789-framebuffer
+"""
+
 from machine import Pin, PWM
 from i80bus import I80Bus
-
 """
     This demo defaults to Pin and Display settings for the LilyGo T-Display Touch
     You will need to adjust the pins and dimensions as necesscary for your project.
@@ -17,7 +26,7 @@ display_backlight_pwm = PWM(display_backlight_pin,
                            freq = 5000, duty_u16 = int(0x0))
 
 display = st7789.ST7789_I80(
-    I80Bus(  # I80 bus takes pin numbers, not objects
+    I80Bus(  # I80 bus takes integer pin numbers, not objects
         dc=7,
         cs=6,
         wr=8,
@@ -27,7 +36,6 @@ display = st7789.ST7789_I80(
     reset = display_reset_pin,
     backlight = display_backlight_pwm,
     rotation = 3,
-    swap_bytes = True
 )
 
 # An example 'palette' class with 20 colors and helper

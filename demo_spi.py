@@ -1,6 +1,15 @@
-import st7789_purefb as st7789
-from machine import Pin, PWM, SPI
+# HOI!
+# YOU MUST UNCOMMENT ONE (and only one..) OF THE DRIVERS BELOW:
 
+#import st7789_purefb as st7789
+#import st7789_fb_plus as st7789
+
+"""
+    st7789 framebuffer driver demo for ST7789 SPI displays
+    https://github.com/easytarget/st7789-framebuffer
+"""
+
+from machine import Pin, PWM, SPI
 """
     This demo defaults to Pin and Display settings for the LilyGo T-Watch 2020 (v3)
     You will need to adjust the pins and dimensions as necesscary for your project.
@@ -10,7 +19,9 @@ from machine import Pin, PWM, SPI
 # T-Watch 2020 specific:
 # - On this hardware you must enable and set an external Power Manager Unit to
 #   provide screen power.
-# T-Watch users need to uncomment this section.
+# - T-Watch users need to uncomment this section.
+#   Everybody else can ignore or delete it as needed
+#
 from sys import path
 path.append('demo_extra')
 import axp202c
@@ -30,19 +41,17 @@ display_backlight_pwm = PWM(display_backlight_pin,
                            freq = 5000, duty_u16 = int(0x0))
 
 display = st7789.ST7789_SPI(
-    SPI(
-	    2, baudrate=30000000,
-	    sck=Pin(18),
-	    mosi=Pin(19),
-	    miso=None
-    ),
+    SPI(2,   # using hardware SPI#2 on esp32, adjust/remove as needed
+	baudrate=30000000,
+	sck=Pin(18),
+	mosi=Pin(19),
+	miso=None),
     width = 240,
     height = 240,
     cs = display_cs_pin,
     dc = display_dc_pin,
     backlight = display_backlight_pwm,
     rotation = 0,
-    swap_bytes = True
 )
 
 # An example 'palette' class with 20 colors and helper
