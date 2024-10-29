@@ -53,7 +53,7 @@ class palette():
     ORANGE   = 0xfc00
     YELLOW   = 0xffe0
     WHITE    = 0xffff
-    # color helpers
+    # color helper
     color565 = st7789.color565
     swap_bytes = st7789.swap_bytes
 
