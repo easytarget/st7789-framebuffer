@@ -479,7 +479,7 @@ class ST7789_SPI(ST7789):
         color_order=BGR,
         swap_bytes=True,
     ):
-        self.i80 = i80
+        self.spi = spi
         self.reset = reset
         self.cs = cs
         self.dc = dc
