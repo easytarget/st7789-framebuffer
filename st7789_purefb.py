@@ -344,18 +344,18 @@ class ST7789_I80(ST7789):
     ST7789 driver class for I80 (I8080) bus devices
 
     Args:
-        i80 (bus): bus object **Required**
-        width (int): display width **Required**
+        i80 (bus): bus object        **Required**
+        width (int): display width   **Required**
         height (int): display height **Required**
         reset (pin): reset pin
-        cs (pin): cs pin                 <------------- defined as part of I80 bus?
+        cs (pin): cs pin is already defined for the I80 bus
+          - only used here for hard resets
+          - kept for completeness, no tested hardware required it
         backlight (pin) or (pwm): backlight pin
-          - can be gpio (on/off) or PWM
-          - specify 'None' if controlled elsewhere, default
-        bright (value): Initial brightness level
+          - can be type Pin (digital), PWM or None
+        bright (value): Initial brightness level; default 'on'
           - a (float) between 0 and 1 if backlight is pwm
           - otherwise (bool) or (int) for pin value()
-          - defaults to '1' (fully on)
         rotation (int): Orientation of display
           - 0-Portrait, default
           - 1-Landscape
@@ -365,7 +365,7 @@ class ST7789_I80(ST7789):
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
         swap_bytes (bool):
-          - Whether display expects MSB or LSB for the color (16-bit) word
+          - Leave enabled, the st7789 uses LSB byte order for color words
     """
     def __init__(
         self,
@@ -416,19 +416,17 @@ class ST7789_SPI(ST7789):
     ST7789 driver class for SPI bus devices
 
     Args:
-        spi (bus): bus object **Required**
-        width (int): display width **Required**
+        spi (bus): bus object        **Required**
+        width (int): display width   **Required**
         height (int): display height **Required**
         reset (pin): reset pin
         cs (pin): cs pin
         dc (pin): dc pin
         backlight (pin) or (pwm): backlight pin
-          - can be gpio (on/off) or PWM
-          - specify 'None' if controlled elsewhere, default
-        bright (value): Initial brightness level
+          - can be type Pin (digital), PWM or None
+        bright (value): Initial brightness level; default 'on'
           - a (float) between 0 and 1 if backlight is pwm
           - otherwise (bool) or (int) for pin value()
-          - defaults to '1' (fully on)
         rotation (int): Orientation of display
           - 0-Portrait, default
           - 1-Landscape
@@ -438,7 +436,7 @@ class ST7789_SPI(ST7789):
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
         swap_bytes (bool):
-          - Whether display expects MSB or LSB for the color (16-bit) word
+          - Leave enabled, the st7789 uses LSB byte order for color words
     """
     def __init__(
         self,
