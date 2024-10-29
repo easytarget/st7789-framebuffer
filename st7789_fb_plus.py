@@ -395,12 +395,10 @@ class ST7789:
 
     def __init__(
         self,
-        bus,
         width,
         height,
-        reset=None,
-        cs=None,
         backlight=None,
+        bright=1,
         rotation=0,
         color_order=BGR,
         custom_init=None,
@@ -444,8 +442,7 @@ class ST7789:
         self.needs_swap = True
         self.fill(0x0)
 
-        if backlight is not None:
-            backlight.value(1)
+        self.brightness(bright)
 
     @staticmethod
     def _find_rotations(width, height):
@@ -461,24 +458,6 @@ class ST7789:
         for command, data, delay in commands:
             self._write(command, data)
             sleep_ms(delay)
-
-    def hard_reset(self):
-        """
-        Hard reset display.
-        """
-        if self.cs:
-            self.cs.off()
-        if self.reset:
-            self.reset.on()
-        sleep_ms(10)
-        if self.reset:
-            self.reset.off()
-        sleep_ms(10)
-        if self.reset:
-            self.reset.on()
-        sleep_ms(120)
-        if self.cs:
-            self.cs.on()
 
     def soft_reset(self):
         """
@@ -607,6 +586,23 @@ class ST7789:
         self.fbuf.pixel(x,y,color)
         
         
+    def brightness(self, bright):
+        """
+        Set backlight value
+
+        Args:
+            bright(value): Brightness value
+              - for PWM this is a (float) between 0 and 1
+              - Otherwise a valid GPIO pin setting (bool)
+        """
+        if self.backlight is None:
+            return
+        if type(self.backlight) is PWM:
+            bright = max(0, min(1, bright))
+            self.backlight.init(duty_u16=int(bright * 0xffff))
+        else:
+            self.backlight.value(bright)
+
     def show(self):
         """
         Write the current framebuf to the display
@@ -768,12 +764,6 @@ class ST7789:
         """
         self.fbuf.scroll(xstep,ystep)
         
-    def _write(self, cmd=None, data=None):
-        # The I80 bus driver expects an int() not byte()
-        if cmd is not None:
-            cmd = cmd[0]
-        self.bus.send(cmd, data)
-
     @micropython.viper
     @staticmethod
     def _pack8(glyphs, idx: uint, fg_color: uint, bg_color: uint):
@@ -1225,4 +1215,153 @@ class ST7789:
                 warp_points(points, warp)
             
             self.fbuf.poly(x,y,points,color,fill)
+
+class ST7789_I80(ST7789):
+    """
+    ST7789 driver class for I80 (I8080) bus devices
+
+    Args:
+        i80 (bus): bus object        **Required**
+        width (int): display width   **Required**
+        height (int): display height **Required**
+        reset (pin): reset pin
+        cs (pin): cs pin is already defined for the I80 bus
+          - only used here for hard resets
+          - kept for completeness, no tested hardware required it
+        backlight (pin) or (pwm): backlight pin
+          - can be type Pin (digital), PWM or None
+        bright (value): Initial brightness level; default 'on'
+          - a (float) between 0 and 1 if backlight is pwm
+          - otherwise (bool) or (int) for pin value()
+        rotation (int): Orientation of display
+          - 0-Portrait, default
+          - 1-Landscape
+          - 2-Inverted Portrait
+          - 3-Inverted Landscape
+        color_order (int):
+          - RGB: Red, Green Blue, default
+          - BGR: Blue, Green, Red
+        swap_bytes (bool):
+          - Leave enabled, the st7789 uses LSB byte order for color words
+    """
+    def __init__(
+        self,
+        i80,
+        width,
+        height,
+        reset=None,
+        cs=None,
+        backlight=None,
+        bright=1,
+        rotation=0,
+        color_order=BGR,
+        swap_bytes=True,
+    ):
+        self.i80 = i80
+        self.reset = reset
+        self.cs = cs
+        super().__init__(width, height, backlight, bright, rotation, color_order, swap_bytes)
+
+    def _write(self, cmd=None, data=None):
+        """I80 bus write to device: command and data."""
+        if cmd is not None:
+            cmd = cmd[0]
+        self.i80.send(cmd, data)
+
+    def hard_reset(self):
+        """
+        Hard reset display.
+        """
+        if self.cs:
+            self.cs.off()
+        if self.reset:
+            self.reset.on()
+        sleep_ms(10)
+        if self.reset:
+            self.reset.off()
+        sleep_ms(10)
+        if self.reset:
+            self.reset.on()
+        sleep_ms(120)
+        if self.cs:
+            self.cs.on()
+
+
+class ST7789_SPI(ST7789):
+    """
+    ST7789 driver class for SPI bus devices
+
+    Args:
+        spi (bus): bus object        **Required**
+        width (int): display width   **Required**
+        height (int): display height **Required**
+        reset (pin): reset pin
+        cs (pin): cs pin
+        dc (pin): dc pin
+        backlight (pin) or (pwm): backlight pin
+          - can be type Pin (digital), PWM or None
+        bright (value): Initial brightness level; default 'on'
+          - a (float) between 0 and 1 if backlight is pwm
+          - otherwise (bool) or (int) for pin value()
+        rotation (int): Orientation of display
+          - 0-Portrait, default
+          - 1-Landscape
+          - 2-Inverted Portrait
+          - 3-Inverted Landscape
+        color_order (int):
+          - RGB: Red, Green Blue, default
+          - BGR: Blue, Green, Red
+        swap_bytes (bool):
+          - Leave enabled, the st7789 uses LSB byte order for color words
+    """
+    def __init__(
+        self,
+        spi,
+        width,
+        height,
+        reset=None,
+        cs=None,
+        dc=None,
+        backlight=None,
+        bright=1,
+        rotation=0,
+        color_order=BGR,
+        swap_bytes=True,
+    ):
+        self.i80 = i80
+        self.reset = reset
+        self.cs = cs
+        self.dc = dc
+        super().__init__(width, height, backlight, bright, rotation, color_order, swap_bytes)
+
+    def _write(self, command=None, data=None):
+        """SPI write to the device: commands and data."""
+        if self.cs:
+            self.cs.off()
+        if command is not None:
+            self.dc.off()
+            self.spi.write(command)
+        if data is not None:
+            self.dc.on()
+            self.spi.write(data)
+        if self.cs:
+            self.cs.on()
+
+    def hard_reset(self):
+        """
+        Hard reset display.
+        """
+        if self.cs:
+            self.cs.off()
+        if self.reset:
+            self.reset.on()
+        sleep_ms(10)
+        if self.reset:
+            self.reset.off()
+        sleep_ms(10)
+        if self.reset:
+            self.reset.on()
+        sleep_ms(120)
+        if self.cs:
+            self.cs.on()
 
