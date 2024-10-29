@@ -52,6 +52,7 @@ class palette():
     WHITE    = 0xffff
     # color helpers
     color565 = st7789.color565
+    swap_bytes = st7789.swap_bytes
 
 print('init done, running demo')
 from demo_main import do_demo
