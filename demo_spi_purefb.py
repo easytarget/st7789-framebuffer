@@ -1,27 +1,37 @@
 import st7789_purefb as st7789
-from machine import Pin, PWM
-from i80bus import I80Bus
+from machine import Pin, PWM, SPI
 
-# All the pins below are defaults for T-Display Touch
+# T-Watch 2020 extra: import PMU lib and set to power screen
+from sys import path
+path.append('demo_extra')
+import axp202c
+axp = axp202c.PMU()
+axp.enablePower(axp202c.AXP202_LDO2)
+axp.setLDO2Voltage(2950)   # low=2600, mid=2950, high=3300
+
+# All the pins below are defaults for T-Watch 2020 v3
 # Adjust to suit your hardware.
 
-display_reset_pin     = Pin(5,  Pin.OUT, value = 1)
+display_cs_pin        = Pin(5,  Pin.OUT, value = 1)
+display_dc_pin        = Pin(27, Pin.OUT, value = 1)
 
-display_backlight_pin = Pin(38, Pin.OUT, value = 0)
+display_backlight_pin = Pin(15, Pin.OUT, value = 0)
 display_backlight_pwm = PWM(display_backlight_pin,
                            freq = 5000, duty_u16 = int(0x0))
 
-display = st7789.ST7789_I80(
-    I80Bus(  # I80 bus takes pin numbers, not objects
-        dc=7,
-        cs=6,
-        wr=8,
-        data=[39, 40, 41, 42, 45, 46, 47, 48]),
-    width = 170,
-    height = 320,
-    reset = display_reset_pin,
+display = st7789.ST7789_SPI(
+    SPI(
+	    2, baudrate=30000000,
+	    sck=Pin(18),
+	    mosi=Pin(19),
+	    miso=None
+    ),
+    width = 240,
+    height = 240,
+    cs = display_cs_pin,
+    dc = display_dc_pin,
     backlight = display_backlight_pwm,
-    rotation = 3,
+    rotation = 0,
     swap_bytes = True
 )
 

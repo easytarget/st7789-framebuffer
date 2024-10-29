@@ -3,10 +3,10 @@
 
 from sys import path, implementation, platform
 from machine import Pin
-from time import time
+from time import ticks_ms
 import random
 
-path.append('demofonts')
+path.append('demo_extra')
 from ezFBfont import ezFBfont
 import ezFBfont_23_spleen_12x24_ascii as promptfont
 import ezFBfont_17_helvR12_ascii as consolefont
@@ -18,23 +18,20 @@ def do_demo(display, palette):
     # GPIO-0 is found as the 'boot' button on most devboards
     button = Pin(0, Pin.IN)
     button_initial = button.value()
+
     # default 10 seconds timeout
-    end = time() + 10
+    end = ticks_ms() + 10000
 
     print('boxlines')
-    while (button.value() == button_initial) and (time() <= end):
+    while (button.value() == button_initial) and (ticks_ms() <= end):
         color = palette.color565(
-            random.getrandbits(8), random.getrandbits(8), random.getrandbits(8)
-        )
-
+            random.getrandbits(8), random.getrandbits(8), random.getrandbits(8))
         display.line(
             random.randint(0, display.width),
             random.randint(0, display.height),
             random.randint(0, display.width),
             random.randint(0, display.height),
-            color,
-        )
-
+            color)
         width = random.randint(0, display.width // 2)
         height = random.randint(0, display.height // 2)
         col = random.randint(0, display.width - width)
