@@ -296,47 +296,43 @@ class ST7789(framebuf.FrameBuffer):
         """ Put the current framebuffer onto the screen """
         self._write(None, self.buffer)
         
-    def _sc(self, c):
-        """ Internal function to swap color word LSB and MSB """
-        return swap_bytes(c) if self.swap_bytes else c
-
     """
         Following functions all superclass the framebuffer
         so that color bytes can be swapped as needed
     """
     def fill(self, c):
-        super().fill(self._sc(c))
+        super().fill(swap_bytes(c))
         
     def pixel(self, x, y, c=None):
         if c is not None:
-            c = self._sc(c)
+            c = swap_bytes(c)
             super().pixel(x, y, c)
         else:
-            return self._sc(super().pixel(x, y))
+            return swap_bytes(super().pixel(x, y))
         
     def hline(self, x, y, w, c):
-        super().hline(x, y, w, self._sc(c))
+        super().hline(x, y, w, swap_bytes(c))
 
     def vline(self, x, y, w, c):
-        super().vline(x, y, w, self._sc(c))
+        super().vline(x, y, w, swap_bytes(c))
 
     def line(self, x1, y1, x2, y2, c):
-        super().line(x1, y1, x2, y2, self._sc(c))
+        super().line(x1, y1, x2, y2, swap_bytes(c))
 
     def rect(self, x, y, w, h, c, f=False):
-        super().rect(x, y, w, h, self._sc(c), f)
+        super().rect(x, y, w, h, swap_bytes(c), f)
 
     def fill_rect(self, x, y, w, h, c):
-        super().rect(x, y, w, h, self._sc(c), True)
+        super().rect(x, y, w, h, swap_bytes(c), True)
         
     def ellipse(self, x, y, xr, yr, c, f=False, m=0xf):
-        super().ellipse(x, y, xr, yr, self._sc(c), f, m)
+        super().ellipse(x, y, xr, yr, swap_bytes(c), f, m)
 
     def poly(self, x, y, coords, c, f=False):
-        super().poly(x, y, coords, self._sc(c), f)
+        super().poly(x, y, coords, swap_bytes(c), f)
 
     def text(self, text, x, y, c=WHITE):
-        super().text(text, x, y, self._sc(c))
+        super().text(text, x, y, swap_bytes(c))
 
 
 class ST7789_I80(ST7789):
