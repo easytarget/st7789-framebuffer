@@ -1,16 +1,26 @@
 import st7789_purefb as st7789
 from machine import Pin, PWM, SPI
 
-# T-Watch 2020 extra: import PMU lib and set to power screen
+"""
+    This demo defaults to Pin and Display settings for the LilyGo T-Watch 2020 (v3)
+    You will need to adjust the pins and dimensions as necesscary for your project.
+"""
+
+"""
+# T-Watch 2020 specific:
+# - On this hardware you must enable and set an external Power Manager Unit to
+#   provide screen power.
+# T-Watch users need to uncomment this section.
 from sys import path
 path.append('demo_extra')
 import axp202c
 axp = axp202c.PMU()
 axp.enablePower(axp202c.AXP202_LDO2)
 axp.setLDO2Voltage(2950)   # low=2600, mid=2950, high=3300
+"""
 
 # All the pins below are defaults for T-Watch 2020 v3
-# Adjust to suit your hardware.
+# Adjust to suit your hardware
 
 display_cs_pin        = Pin(5,  Pin.OUT, value = 1)
 display_dc_pin        = Pin(27, Pin.OUT, value = 1)
@@ -35,7 +45,7 @@ display = st7789.ST7789_SPI(
     swap_bytes = True
 )
 
-# A 'palette' class with 20 colors and helpers
+# An example 'palette' class with 20 colors and helper
 class palette():
     # color definitions
     BLACK    = 0x0000
@@ -58,9 +68,8 @@ class palette():
     ORANGE   = 0xfc00
     YELLOW   = 0xffe0
     WHITE    = 0xffff
-    # color helpers
+    # color helper
     color565 = st7789.color565
-    swap_bytes = st7789.swap_bytes
 
 print('init done, running demo')
 from demo_main import do_demo

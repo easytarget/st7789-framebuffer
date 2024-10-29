@@ -2,8 +2,10 @@ import st7789_purefb as st7789
 from machine import Pin, PWM
 from i80bus import I80Bus
 
-# All the pins below are defaults for T-Display Touch
-# Adjust to suit your hardware.
+"""
+    This demo defaults to Pin and Display settings for the LilyGo T-Display Touch
+    You will need to adjust the pins and dimensions as necesscary for your project.
+"""
 
 display_reset_pin     = Pin(5,  Pin.OUT, value = 1)
 
@@ -25,7 +27,7 @@ display = st7789.ST7789_I80(
     swap_bytes = True
 )
 
-# A 'palette' class with 20 colors and helpers
+# An example 'palette' class with 20 colors and helper
 class palette():
     # color definitions
     BLACK    = 0x0000
@@ -50,7 +52,6 @@ class palette():
     WHITE    = 0xffff
     # color helpers
     color565 = st7789.color565
-    swap_bytes = st7789.swap_bytes
 
 print('init done, running demo')
 from demo_main import do_demo
