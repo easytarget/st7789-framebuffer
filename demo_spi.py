@@ -15,20 +15,18 @@ from machine import Pin, PWM, SPI
     You will need to adjust the pins and dimensions as necesscary for your project.
 """
 
-"""
 # T-Watch 2020 specific:
 # - On this hardware you must enable and set an external Power Manager Unit to
 #   provide screen power.
 # - T-Watch users need to uncomment this section.
 #   Everybody else can ignore or delete it as needed
 #
-from sys import path
-path.append('demo_extra')
-import axp202c
-axp = axp202c.PMU()
-axp.enablePower(axp202c.AXP202_LDO2)
-axp.setLDO2Voltage(2950)   # low=2600, mid=2950, high=3300
-"""
+#from sys import path
+#path.append('demo_extra')
+#import axp202c
+#axp = axp202c.PMU()
+#axp.enablePower(axp202c.AXP202_LDO2)
+#axp.setLDO2Voltage(2950)   # low=2600, mid=2950, high=3300
 
 # All the pins below are defaults for T-Watch 2020 v3
 # Adjust to suit your hardware
@@ -42,16 +40,16 @@ display_backlight_pwm = PWM(display_backlight_pin,
 
 display = st7789.ST7789_SPI(
     SPI(2,   # using hardware SPI#2 on esp32, adjust/remove as needed
-	baudrate=30000000,
-	sck=Pin(18),
-	mosi=Pin(19),
-	miso=None),
+        baudrate=30000000,
+        sck=Pin(18),
+        mosi=Pin(19),
+        miso=None),
     width = 240,
     height = 240,
     cs = display_cs_pin,
     dc = display_dc_pin,
     backlight = display_backlight_pwm,
-    rotation = 0,
+    rotation = 2,
 )
 
 # An example 'palette' class with 20 colors and helper
@@ -82,5 +80,5 @@ class palette():
     swap_bytes = st7789.swap_bytes
 
 print('init done, running demo')
-from demo_main import do_demo
-do_demo(display, palette)
+from demo_extra import run_demo
+run_demo(display, palette)
