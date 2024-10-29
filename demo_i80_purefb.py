@@ -1,19 +1,18 @@
 import st7789_purefb as st7789
+from machine import Pin, PWM
 from i80bus import I80Bus
-from machine import Pin, PWM, SoftI2C
 
 # All the pins below are defaults for T-Display Touch
 # Adjust to suit your hardware.
 
-display_power_pin     = Pin(15, Pin.OUT, value = 1)
-display_rd_pin        = Pin(9,  Pin.OUT, value = 1)
 display_reset_pin     = Pin(5,  Pin.OUT, value = 1)
+
 display_backlight_pin = Pin(38, Pin.OUT, value = 0)
 display_backlight_pwm = PWM(display_backlight_pin,
                            freq = 5000, duty_u16 = int(0x0))
 
 display = st7789.ST7789(
-    I80Bus(
+    I80Bus(  # I80 bus takes pin numbers, not objects
         dc=7,
         cs=6,
         wr=8,
@@ -53,5 +52,6 @@ class palette():
     color565 = st7789.color565
     swap_bytes = st7789.swap_bytes
 
+print('init done, running demo')
 from demo_main import do_demo
 do_demo(display, palette)
