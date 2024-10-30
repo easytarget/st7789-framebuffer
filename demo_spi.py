@@ -15,6 +15,16 @@ from machine import Pin, PWM, SPI
     You will need to adjust the pins and dimensions as necesscary for your project.
 """
 
+# All the pins below are defaults for T-Watch 2020 v3
+# Adjust to suit your hardware
+
+display_cs_pin        = Pin(5,  Pin.OUT, value = 1)
+display_dc_pin        = Pin(27, Pin.OUT, value = 1)
+
+display_backlight_pin = Pin(15, Pin.OUT, value = 0)
+display_backlight_pwm = PWM(display_backlight_pin,
+                            duty_u16 = int(0x0))
+
 # T-Watch 2020 specific:
 # - On this hardware you must enable and set an external Power Manager Unit to
 #   provide screen power.
@@ -27,16 +37,6 @@ from machine import Pin, PWM, SPI
 #axp = axp202c.PMU()
 #axp.enablePower(axp202c.AXP202_LDO2)
 #axp.setLDO2Voltage(2950)   # low=2600, mid=2950, high=3300
-
-# All the pins below are defaults for T-Watch 2020 v3
-# Adjust to suit your hardware
-
-display_cs_pin        = Pin(5,  Pin.OUT, value = 1)
-display_dc_pin        = Pin(27, Pin.OUT, value = 1)
-
-display_backlight_pin = Pin(15, Pin.OUT, value = 0)
-display_backlight_pwm = PWM(display_backlight_pin,
-                            duty_u16 = int(0x0))
 
 display = st7789.ST7789_SPI(
     SPI(2,   # using hardware SPI#2 on esp32, adjust/remove as needed
