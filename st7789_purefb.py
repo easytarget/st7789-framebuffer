@@ -32,7 +32,6 @@ https://github.com/devbis/st7789py_mpy.
 
 import framebuf, struct
 from time import sleep_ms
-from machine import PWM
 
 # 7789 direct framebuffer driver
 
@@ -190,6 +189,7 @@ class ST7789(framebuf.FrameBuffer):
         self.ystart = 0
         # backlight pin
         self.backlight = backlight
+        self._pwm_bl = True
         # Check display is known and get rotation table
         self.rotations = self._find_rotations(width, height)
         if not self.rotations:
@@ -318,9 +318,14 @@ class ST7789(framebuf.FrameBuffer):
         """
         if self.backlight is None:
             return
-        if type(self.backlight) is PWM:
-            bright = max(0, min(1, bright))
-            self.backlight.init(duty_u16=int(bright * 0xffff))
+        elif self._pwm_bl:
+            try:
+                bright = max(0, min(1, bright))
+                self.backlight.init(duty_u16=int(bright * 0xffff))
+            except:
+                # not a PWM backlight; set flag and try again
+                self._pwm_bl = False
+                self.brightness(bright)
         else:
             self.backlight.value(bright)
 

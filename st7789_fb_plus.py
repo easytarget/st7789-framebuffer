@@ -60,7 +60,6 @@ This driver supports:
 
 from math import sin, cos, floor, pi, sqrt, pow
 import framebuf, struct, array
-from machine import PWM
 
 #
 # This allows sphinx to build the docs
@@ -429,6 +428,7 @@ class ST7789:
         self.xstart = 0
         self.ystart = 0
         self.backlight = backlight
+        self._pwm_bl = True
         self._rotation = rotation % 4
         self.color_order = color_order
         self.init_cmds = custom_init or _ST7789_INIT_CMDS
@@ -595,9 +595,14 @@ class ST7789:
         """
         if self.backlight is None:
             return
-        if type(self.backlight) is PWM:
-            bright = max(0, min(1, bright))
-            self.backlight.init(duty_u16=int(bright * 0xffff))
+        elif self._pwm_bl:
+            try:
+                bright = max(0, min(1, bright))
+                self.backlight.init(duty_u16=int(bright * 0xffff))
+            except:
+                # not a PWM backlight; set flag and try again
+                self._pwm_bl = False
+                self.brightness(bright)
         else:
             self.backlight.value(bright)
 
@@ -1331,7 +1336,7 @@ class ST7789_SPI(ST7789):
         custom_init=None,
         custom_rotations=None,
     ):
-        self.i80 = i80
+        self.spi = spi
         self.reset = reset
         self.cs = cs
         self.dc = dc
