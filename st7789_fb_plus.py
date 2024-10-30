@@ -437,7 +437,6 @@ class ST7789:
         self.init(self.init_cmds)
         self.init(self.init_cmds)
         self.rotation(self._rotation)
-        self.needs_swap = True
         self.fill(0x0)
 
         self.brightness(bright)

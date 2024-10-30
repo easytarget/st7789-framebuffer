@@ -17,6 +17,7 @@ class ezFBfont():
                  fg = 1,
                  bg = 0,
                  tkey = -1,
+                 cswap = None,
                  halign = 'left',
                  valign = 'top',
                  vgap = 0,
@@ -32,6 +33,8 @@ class ezFBfont():
         self._font_format = framebuf.MONO_HLSB
         self._font_colors = 2
         self._palette_format = framebuf.RGB565  # support up to 65536 colors when blitting
+        # colors are in lsb format?
+        self._cswap = self._get_cswap(cswap)
         # inform
         if verbose:
             fstr = '{} : initialised: height: {}, {} width: {}, baseline: {}'
@@ -58,6 +61,21 @@ class ezFBfont():
             x += char_width + self.hgap if char_width > 0 else 0
         x = x - self.hgap if x != 0 else x   # remove any trailing hgap
         return x, self._font.height()
+    
+    def _get_cswap(self, cswap):
+        # Attempt to check display's 'swap_bytes' status
+        if cswap is None:
+            try:
+                return self._device.needs_swap
+            except Exception as e:
+                print(e)
+                return False  # default to False
+        return cswap  # use supplied value
+        
+
+    def _swap_bytes(self, color):
+        #Flips the left and right bytes in a 16 bit color word.
+        return ((color & 255) << 8) + (color >> 8) if self._cswap else color
 
     def _put_char(self, char, x, y, fg, bg, tkey):
         # fetch the glyph
@@ -69,8 +87,8 @@ class ezFBfont():
         buf = bytearray(glyph)
         # assemble color map
         palette = framebuf.FrameBuffer(palette_buf, self._font_colors, 1, self._palette_format)
-        palette.pixel(0, 0, bg)
-        palette.pixel(self._font_colors -1, 0, fg)
+        palette.pixel(0, 0, self._swap_bytes(bg))
+        palette.pixel(self._font_colors -1, 0, self._swap_bytes(fg))
         # fetch and blit the glyph
         charbuf = framebuf.FrameBuffer(buf, char_width, char_height, self._font_format)
         self._device.blit(charbuf, x, y, tkey, palette)
