@@ -2,6 +2,8 @@
 Because we dont (yet) have enough drivers for this chip.. :-)
 - ToDo: Notes on MPDISPLAY and firmware based drivers like s3lcd as (good, faster) alternatives.
 
+[![Demos](doc/tdisplay1.jpg)](doc/tdisplay1.jpg)
+
 ## A 'pure' framebuffer driver
 Fully supports MicroPython's built in frameuffer, with no additional drawing, scrolling or font writng features.
 
