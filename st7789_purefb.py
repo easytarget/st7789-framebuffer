@@ -169,16 +169,7 @@ class ST7789(framebuf.FrameBuffer):
     """
     ST7789 driver class base
     """
-    def __init__(
-        self,
-        width,
-        height,
-        backlight=None,
-        bright=1,
-        rotation=0,
-        color_order=BGR,
-        swap_bytes=True,
-    ):
+    def __init__(self, width, height, backlight, bright, rotation, color_order, swap_bytes):
         """
         Initialize display and backlight.
         """
@@ -199,7 +190,7 @@ class ST7789(framebuf.FrameBuffer):
                 f"Unsupported {width}x{height} display. Supported displays: {supported_displays}")
         # Colors
         self.color_order = color_order
-        self.swap_bytes = swap_bytes
+        self.needs_swap = swap_bytes
         # init the st7789
         self.init_cmds = _ST7789_INIT_CMDS
         self.hard_reset()
@@ -333,44 +324,48 @@ class ST7789(framebuf.FrameBuffer):
     def show(self):
         """ Put the current framebuffer onto the screen """
         self._write(None, self.buffer)
-        
+
+    def _cswap(self, color):
+        """ Swap colors as needed """
+        return swap_bytes(color) if self.needs_swap else color
+
     """
         Following functions all superclass the framebuffer
         so that color bytes can be swapped as needed
     """
     def fill(self, c):
-        super().fill(swap_bytes(c))
-        
+        super().fill(self._cswap(c))
+
     def pixel(self, x, y, c=None):
         if c is not None:
-            c = swap_bytes(c)
+            c = self._cswap(c)
             super().pixel(x, y, c)
         else:
-            return swap_bytes(super().pixel(x, y))
-        
-    def hline(self, x, y, w, c):
-        super().hline(x, y, w, swap_bytes(c))
+            return self._cswap(super().pixel(x, y))
 
-    def vline(self, x, y, w, c):
-        super().vline(x, y, w, swap_bytes(c))
+    def hline(self, x, y, w, c):
+        super().hline(x, y, w, self._cswap(c))
+
+    def vline(self, x, y, h, c):
+        super().vline(x, y, h, self._cswap(c))
 
     def line(self, x1, y1, x2, y2, c):
-        super().line(x1, y1, x2, y2, swap_bytes(c))
+        super().line(x1, y1, x2, y2, self._cswap(c))
 
     def rect(self, x, y, w, h, c, f=False):
-        super().rect(x, y, w, h, swap_bytes(c), f)
+        super().rect(x, y, w, h, self._cswap(c), f)
 
     def fill_rect(self, x, y, w, h, c):
-        super().rect(x, y, w, h, swap_bytes(c), True)
-        
+        super().rect(x, y, w, h, self._cswap(c), True)
+
     def ellipse(self, x, y, xr, yr, c, f=False, m=0xf):
-        super().ellipse(x, y, xr, yr, swap_bytes(c), f, m)
+        super().ellipse(x, y, xr, yr, self._cswap(c), f, m)
 
     def poly(self, x, y, coords, c, f=False):
-        super().poly(x, y, coords, swap_bytes(c), f)
+        super().poly(x, y, coords, self._cswap(c), f)
 
     def text(self, text, x, y, c=WHITE):
-        super().text(text, x, y, swap_bytes(c))
+        super().text(text, x, y, self._cswap(c))
 
 
 class ST7789_I80(ST7789):
@@ -418,13 +413,13 @@ class ST7789_I80(ST7789):
         self.reset = reset
         self.cs = cs
         super().__init__(width, height, backlight, bright, rotation, color_order, swap_bytes)
-        
+
     def _write(self, cmd=None, data=None):
         """I80 bus write to device: command and data."""
         if cmd is not None:
             cmd = cmd[0]
         self.i80.send(cmd, data)
-    
+
     def hard_reset(self):
         """
         Hard reset display.
@@ -490,7 +485,7 @@ class ST7789_SPI(ST7789):
         self.cs = cs
         self.dc = dc
         super().__init__(width, height, backlight, bright, rotation, color_order, swap_bytes)
-        
+
     def _write(self, command=None, data=None):
         """SPI write to the device: commands and data."""
         if self.cs:
@@ -503,7 +498,7 @@ class ST7789_SPI(ST7789):
             self.spi.write(data)
         if self.cs:
             self.cs.on()
-    
+
     def hard_reset(self):
         """
         Hard reset display.
