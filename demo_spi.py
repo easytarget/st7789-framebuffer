@@ -20,6 +20,7 @@ from machine import Pin, PWM, SPI
 
 display_cs_pin        = Pin(5,  Pin.OUT, value = 1)
 display_dc_pin        = Pin(27, Pin.OUT, value = 1)
+display_reset_pin     = None
 
 display_backlight_pin = Pin(15, Pin.OUT, value = 0)
 display_backlight_pwm = PWM(display_backlight_pin,
@@ -46,6 +47,7 @@ display = st7789.ST7789_SPI(
         miso=None),
     width = 240,
     height = 240,
+    reset = display_reset_pin,
     cs = display_cs_pin,
     dc = display_dc_pin,
     backlight = display_backlight_pwm,
