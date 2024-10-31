@@ -5,6 +5,7 @@
 from sys import path, implementation, platform
 from machine import Pin
 from time import ticks_ms
+from gc import mem_free, collect
 import random
 
 path.append('demo_extra')
@@ -23,6 +24,7 @@ def run_demo(display, palette, runtime=10000):
     # default 10 seconds timeout
     end = ticks_ms() + runtime
 
+    # A graphics demo drawing random rectangles and lines
     print('boxlines')
     while (button.value() == button_initial) and (ticks_ms() <= end):
         color = palette.color565(
@@ -48,14 +50,24 @@ def run_demo(display, palette, runtime=10000):
         )
         display.show()
 
+    # Gather memory info after graphics animation but before loading fonts
+    collect()
+    mem = mem_free()
+
+    # A demo of using fonts with my font writer class
     print('prompt')
     display.fill(palette.BLACK)
-    prompt = ezFBfont(display, promptfont, fg = palette.swap_bytes(palette.WHITE))
-    cons = ezFBfont(display, consolefont, fg = palette.swap_bytes(palette.SILVER))
 
+    # Declare two fonts:
+    # - One that one uses the built-in 'cswap' feature in my font writer
+    # - The other has the color swapped before being passed
+    prompt = ezFBfont(display, promptfont, fg = palette.BLUE, cswap = True)
+    cons = ezFBfont(display, consolefont, fg = palette.swap_bytes(palette.GREEN))
+
+    # Use the fonts to show system info
     plat = platform.upper()
     ver = '{}.{}.{} {}'.format(*implementation.version)
-
     prompt.write('st7789 framebuffer', 5, 5)
-    cons.write('{}\nMicropython: {}\n>>> _'.format(plat, ver), 5, 35)
+    cons.write('{}\nMicropython: {}\n{} free\n[repl mode]'.format(plat, ver, mem), 5, 35)
     display.show()
+#fin
