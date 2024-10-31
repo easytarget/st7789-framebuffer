@@ -5,7 +5,7 @@
 # The fonts for this demo are in the 'doc/plusfonts' folder; copy them to
 # the 'demo_extra' folder before using this demo.
 
-import st7789_purefb as st7789
+#import st7789_purefb as st7789
 #import st7789_fb_plus as st7789
 
 """
