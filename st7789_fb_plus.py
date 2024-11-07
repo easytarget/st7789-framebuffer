@@ -243,7 +243,7 @@ def swap_bytes(color):
     """
     this just flips the left and right byte in the 16 bit color.
     """
-    return ((color & 255) << 8) + (color >> 8) 
+    return ((color & 255) << 8) + (color >> 8)
 
 def scale_poly(points, scale=1.2):
     """
@@ -265,7 +265,7 @@ def rotate_points(points, angle=0, center_x=0, center_y=0):
                 center_x + floor((points[i] - center_x) * cos_a - (points[i+1] - center_y) * sin_a)
             )
             rotated.append(
-                center_y + floor((points[i] - center_x) * sin_a + (points[i+1] - center_y) * cos_a)    
+                center_y + floor((points[i] - center_x) * sin_a + (points[i+1] - center_y) * cos_a)
             )
         return rotated
     else:
@@ -277,7 +277,7 @@ def warp_points(points, tilt_center=0.5, ease=True, focus_center_x=True, smalles
     """
     if tilt_center == 0.5 and not ease:
         return points
-    
+
     if smallest == None:
         smallest = min(points)
     if largest == None:
@@ -288,11 +288,11 @@ def warp_points(points, tilt_center=0.5, ease=True, focus_center_x=True, smalles
     adj_largest = largest - smallest
     adj_midpoint = adj_largest / 2
     new_adj_midpoint = adj_largest * tilt_center
-    
+
     #shift largest down, (along with newmidpoint), so that newmidpoint = 0
     #this is done so that we can interpolate between 0 and this number, then re-add the midpoint
     temp_largest = adj_largest - new_adj_midpoint
-    
+
     #iterate over each point
     # if point is less than midpoint, interpolate point between 0 and new midpoint
     # if point is greater than midpoint, interpolate between new midpoint and largest
@@ -300,22 +300,22 @@ def warp_points(points, tilt_center=0.5, ease=True, focus_center_x=True, smalles
     #for index, point in enumerate(points):
     for index in range(1,len(points),2):
         point=points[index]
-        
+
         if focus_center_x:
             #if focus_center_x, then apply the effect more strongly to points nearer to the center x
             adj_x_val = points[index-1] - smallest
             x_center_factor = abs(adj_x_val - adj_midpoint ) / adj_midpoint
             x_center_factor = ease_in_out_circ(x_center_factor)
-        
+
         if point < midpoint:
             #find fac between 0 and adj_midpoint,
             #then interpolate between 0 and new midpoint
             adj_point = point - smallest
             factor = adj_point / adj_midpoint
-            
+
             #fancy easing function to round out the shape more
             factor = ease_in_out_sine(factor)
-            
+
             if focus_center_x:
                 points[index] = floor(
                     mix(
@@ -330,10 +330,10 @@ def warp_points(points, tilt_center=0.5, ease=True, focus_center_x=True, smalles
             #then interpolate between new midpoint and largest
             adj_point = point - smallest
             factor = (adj_point - adj_midpoint) / (adj_largest - adj_midpoint)
-            
+
             #fancy easing function to round out the shape more
             factor = ease_in_out_sine(factor)
-            
+
             if focus_center_x:
                 points[index] = floor(
                     mix(
@@ -341,8 +341,8 @@ def warp_points(points, tilt_center=0.5, ease=True, focus_center_x=True, smalles
                         )
                     )
             else:
-                points[index] = floor((temp_largest * factor) + new_adj_midpoint + smallest)       
-            
+                points[index] = floor((temp_largest * factor) + new_adj_midpoint + smallest)
+
     return points
 
 def mix(val2, val1, fac=0.5):
@@ -581,8 +581,8 @@ class ST7789:
         if self.needs_swap:
             color = swap_bytes(color)
         self.fbuf.pixel(x,y,color)
-        
-        
+
+
     def brightness(self, bright):
         """
         Set backlight value
@@ -611,8 +611,8 @@ class ST7789:
         """
         self._set_window(0, 0, self.width - 1, self.height - 1)
         self._write(None, self._buf)
-        
-        
+
+
     def blit_buffer(self, buffer, x, y, width, height, key=-1, palette=None):
         """
         Copy buffer to display framebuf at the given location.
@@ -627,11 +627,11 @@ class ST7789:
             palette (framebuf): the color pallete to use for the buffer
         """
         self.fbuf.blit(framebuf.FrameBuffer(buffer,width, height, framebuf.RGB565), x,y,key,palette)
-        
+
     def blit(self, fbuf, x, y, key=-1, palette=None):
         """
         Copy FrameBuffer to internal FrameBuffer at the given location.
-        
+
         This is an alternate version of blit_buffer,
         which does not create a new framebuffer on use.
         This can be useful for reusing a framebuffer multiple times.
@@ -642,7 +642,7 @@ class ST7789:
             Y (int): Top left corner y coordinate
             width (int): Width
             height (int): Height
-            buffer_format (framebuf format): the color format to use for the blit function. 
+            buffer_format (framebuf format): the color format to use for the blit function.
             key (int): color to be considered transparent
             palette (framebuf): the color pallete to use for the buffer
         """
@@ -662,7 +662,7 @@ class ST7789:
         if self.needs_swap:
             color = swap_bytes(color)
         self.fbuf.rect(x,y,w,h,color,fill)
-        
+
     def ellipse(self, x, y, xr, yr, color, fill=False):
         """
         Draw an ellipse at the given location, radius and color.
@@ -682,7 +682,7 @@ class ST7789:
     def fill_rect(self, x, y, width, height, color):
         """
         Draw a rectangle at the given location, size and filled with color.
-        
+
         This is just a wrapper for the rect() method,
         and is provided for compatibility with the original st7789py driver.
 
@@ -765,7 +765,7 @@ class ST7789:
         This is a wrapper for the framebuffer.scroll method:
         """
         self.fbuf.scroll(xstep,ystep)
-        
+
     @micropython.viper
     @staticmethod
     def _pack8(glyphs, idx: uint, fg_color: uint, bg_color: uint):
@@ -846,7 +846,7 @@ class ST7789:
             bg_color = 1
         else:
             bg_color = 0
-            
+
         for char in text:
             ch = ord(char)
             if (
@@ -910,9 +910,9 @@ class ST7789:
     def text(self, text, x, y, color=WHITE):
         """
         Quickly draw text to the display using the FrameBuffer text method.
-        
+
         This uses the font built into the FrameBuffer class, and so custom fonts are not supported.
-        
+
         Args:
             text (str): text to write
             x (int): column to start drawing at
@@ -967,12 +967,12 @@ class ST7789:
         bpp = bitmap.BPP
         bs_bit = bpp * bitmap_size * index  # if index > 0 else 0
         palette = bitmap.PALETTE
-        
+
         #swap colors if needed:
         if self.needs_swap:
             for i in range(0,len(palette)):
                 palette[i] = swap_bytes(palette[i])
-        
+
         buffer = bytearray(buffer_len)
 
         for i in range(0, buffer_len, 2):
@@ -987,7 +987,7 @@ class ST7789:
 
             buffer[i] = color & 0xFF
             buffer[i + 1] = color >> 8
-        
+
         self.blit_buffer(buffer,x,y,width,height,key=key)
         #self._set_window(x, y, to_col, to_row)
         #self._write(None, buffer)
@@ -996,7 +996,7 @@ class ST7789:
         """
         Draw a 2 color bitmap as a transparent icon on display,
         at the specified column and row, using given color and memoryview object.
-        
+
         This function was particularly designed for use with MicroHydra Launcher,
         but could probably be useful elsewhere too.
 
@@ -1007,7 +1007,7 @@ class ST7789:
             x (int): column to start drawing at
             y (int): row to start drawing at
             invert_colors (bool): flip transparent and non-tranparent parts of bitmap.
-            
+
         """
         width = bitmap_module.WIDTH
         height = bitmap_module.HEIGHT
@@ -1022,16 +1022,16 @@ class ST7789:
         bs_bit = 0
         needs_swap = self.needs_swap
         buffer = bytearray(buffer_len)
-        
+
         if self.needs_swap:
             color = swap_bytes(color)
-            
+
         #prevent bg color from being invisible
         if color == 0:
             palette = (65535, color)
         else:
             palette = (0, color)
-        
+
         for i in range(0, buffer_len, 2):
             color_index = 0
             for _ in range(bpp):
@@ -1045,10 +1045,10 @@ class ST7789:
             buffer[i] = color & 0xFF
             buffer[i + 1] = color >> 8
 
-        
+
         self.blit_buffer(buffer,x,y,width,height,key=palette[0])
-                
-            
+
+
 #     def write(self, font, string, x, y, fg=WHITE, bg=None):
 #         #key out bg when unspecified
 #         key=-1
@@ -1070,7 +1070,7 @@ class ST7789:
 #                 char_index = font.MAP.index(character)
 #                 offset = char_index * font.OFFSET_WIDTH
 #                 bs_bit = font.OFFSETS[offset]
-#                 
+#
 #                 if font.OFFSET_WIDTH > 2:
 #                     bs_bit = (bs_bit << 8) + font.OFFSETS[offset + 2]
 #                 elif font.OFFSET_WIDTH > 1:
@@ -1105,27 +1105,27 @@ class ST7789:
         """
         if self.needs_swap:
             fg = swap_bytes(fg)
-            
+
         for character in string:
             try:
                 char_index = font.MAP.index(character)
                 offset = char_index * font.OFFSET_WIDTH
                 bs_bit = font.OFFSETS[offset]
-                
+
                 if font.OFFSET_WIDTH > 2:
                     bs_bit = (bs_bit << 8) + font.OFFSETS[offset + 2]
                 elif font.OFFSET_WIDTH > 1:
                     bs_bit = (bs_bit << 8) + font.OFFSETS[offset + 1]
-                
+
                 char_width = font.WIDTHS[char_index]
                 buffer_needed = char_width * font.HEIGHT
-                
+
                 for i in range(0, buffer_needed):
                     px_x = x + ((i) % char_width)
                     px_y = y + ((i) // char_width)
                     if font.BITMAPS[bs_bit // 8] & 1 << (7 - (bs_bit % 8)) > 0:
                         self.fbuf.pixel(px_x,px_y,fg)
-                    
+
                     bs_bit += 1
 
                 x += char_width
@@ -1156,7 +1156,7 @@ class ST7789:
                 pass
 
         return width
-    
+
     def simple_poly(self,points,x,y,color,fill=False):
         """
         Draw a polygon on the display.
@@ -1170,9 +1170,9 @@ class ST7789:
         if self.needs_swap:
             color = swap_bytes(color)
         self.fbuf.poly(x,y,points,color,fill)
-    
-    
-    
+
+
+
     def polygon(self, points, x, y, color, angle=0, center_x=None, center_y=None, scale=1, warp=None, fill=False):
         """
         Draw a polygon on the display.
@@ -1186,36 +1186,36 @@ class ST7789:
             center_x (int): X-coordinate of the rotation center (default: 0).
             center_y (int): Y-coordinate of the rotation center (default: 0).
         """
-        
+
         #simple poly wrapper
         if angle == 0 and scale == 1 and warp == None:
             if self.needs_swap:
                 color = swap_bytes(color)
             self.fbuf.poly(x,y,points,color,fill)
-        
+
         #complex polygon
         else:
             if self.needs_swap:
                 color = swap_bytes(color)
             #clone array so we don't modify original
             points = array.array('h',points)
-            
+
             #scale
             if scale != 1:
                 scale_poly(points,scale)
-            
+
             if center_x == None:
                 center_x = max(points) // 2
             if center_y == None:
                 center_y = max(points) // 2
-            
+
             #rotate
             if angle != 0:
                 points = rotate_points(points, angle, center_x, center_y)
-                
+
             if warp != None:
                 warp_points(points, warp)
-            
+
             self.fbuf.poly(x,y,points,color,fill)
 
 class ST7789_I80(ST7789):
