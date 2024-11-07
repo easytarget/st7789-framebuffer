@@ -1243,9 +1243,8 @@ class ST7789_I80(ST7789):
         color_order (int):
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
-        swap_bytes (bool):
-          - Leave enabled, the st7789 uses LSB byte order for color words
-
+        custom_init: Custom init commands (for custom display hardware)
+        custom_rotations: Custom rotations (for custom display sizes)
     """
     def __init__(
         self,
@@ -1317,8 +1316,8 @@ class ST7789_SPI(ST7789):
         color_order (int):
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
-        swap_bytes (bool):
-          - Leave enabled, the st7789 uses LSB byte order for color words
+        custom_init: Custom init commands (for custom display hardware)
+        custom_rotations: Custom rotations (for custom display sizes)
     """
     def __init__(
         self,
