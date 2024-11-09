@@ -10,15 +10,16 @@ Note: *If you have a 240x24 or 320x170 display these drivers really *need* a fir
 *Although these drivers will just about load and run without it, the framebuffer will be using over 100K of memory; there simply is not enough left over for any meaningful program.*
 
 [![Demos](doc/tdisplay-cover.jpg)](doc/tdisplay2.jpg)
-* Photos dont really do justice to how good the IPS panel on the T-Display looks in reality.https://github.com/russhughes/st7789_mpy
+* Photos dont really do justice to how good the IPS panel on the T-Display looks in reality.
 
 # There are better drivers available; but they require custom firmware
-https://github.com/russhughes/st7789_mpy is a excellent driver; especially if you have a i80 bus. Because it uses the bus properly it is very fast. far faster than the drivers in this repo.
+In particular: https://github.com/russhughes/s3lcd is a excellent driver; especially if you have a i80 bus.
+- Because it uses the bus properly it is very fast. far faster than the drivers in this repo.
 
 If you need speed or lots of free memory; and using (possibly compiling) a custom firmware is practical for you, use that driver and ignore this page.
 - I'm being serious; The drvers  gve here were made for my own *very simple projects* and they do not scale very well for more complex use.
-
-[LVGL](https://docs.lvgl.io/master/details/integration/bindings/micropython.html) and other projects also have good st7789 support via frmware drivers; if you are building a full GUI check them out.
+- @russhughes has a good non-framebuffer driver here: https://github.com/russhughes/st7789_mpy 
+- [LVGL](https://docs.lvgl.io/master/details/integration/bindings/micropython.html) and other projects also have good st7789 support via frmware drivers; Russ has also contributed to those; if you are building a full GUI check them out.
 
 # This repo actually has TWO drivers:
 
@@ -38,10 +39,11 @@ Both support SPI and I80 busses; one is smaller and more basic than the other.
 * Not very extensively tested.
 
 ## Notes
-Both of these divers use a lot of memory for the framebuffer; for 320x170 and 240x240 displays this is just *over* 100K of memory; with these large displays it may prove impossible to use these unless you have PSRAM (SPIRAM) enabled in the micropython firmware. SPI RAM enabled version for the firmwares are available on the main MicroPython dowwnload sites. The smaller (240x135) display I tested with only uses 60K and did not have any memory issues on a ESP32-C3.
+Both of these divers use a lot of memory for the framebuffer; for 320x170 and 240x240 displays this is just *over* 100K of memory; with these large displays it may prove impossible to use these unless you have PSRAM (SPIRAM) enabled in the micropython firmware. 
+- SPI RAM enabled versions of the generic micropython firmware are available on the main MicroPython download site.
+- The smaller (240x135) display I tested with only uses 60K and did not have any memory issues on a ESP32-C3 with the generic esp32-c3 (non SPIRAM) firmware.
 
-The more advanced driver has additional useful methods for use with large color displays; it is derived (via a third party) from the main MPDisplay driver; these are documented [here](https://github.com/russhughes/st7789s3_mpy/blob/main/README.md#methods); please note that the Init options are a little different as noted below, also see my examples etc.
-@russhughes 
+The more advanced driver has additional useful methods for use with large color displays; it is derived (via a third party) from the main MPDisplay driver; these are documented [here](https://github.com/russhughes/st7789s3_mpy/blob/main/README.md#methods)
 
 # Use
 See the examples (demo's) for a good example of using these.
@@ -91,10 +93,8 @@ display = st7789.ST7789_I80(i80,
                             color_order=BGR,
                             reverse_bytes_in_word=True)
 ```
-### Arguments
-Arguments:
-
-The only difference between SPI and I80 init is that for SPI the `DC` pin can be supplied, but is not defined for I80 use.
+### Init() Arguments
+The *only* difference between SPI and I80 init is that for SPI the `DC` pin can be supplied, but is not defined for I80 use.
 ```python
         spi OR i80 (bus): bus object **Required**
         width (int): display width   **Required**
@@ -118,7 +118,7 @@ The only difference between SPI and I80 init is that for SPI the `DC` pin can be
         reverse_bytes_in_word (bool):
           - Enable if the display uses LSB byte order for color words
 ```
-## Use
+## Methods
 After init you draw on the framebuffer as appropriate using the stock framebuffer [methods](https://docs.micropython.org/en/latest/library/framebuf.html#drawing-primitive-shapes) (and extended methods for `fb_plus`)
 
 You then need to call:
