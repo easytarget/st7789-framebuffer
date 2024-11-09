@@ -33,7 +33,7 @@ Both support SPI and I80 busses; one is smaller and more basic than the other.
 
 ## `st7789_fb_plus` :: A modified version of the driver from the echo-lalia
 * https://github.com/echo-lalia/st7789fbuf
-* This is in turn a modified version of Russ Hughes [mpdisplay](https://github.com/bdbarnett/mpdisplay) driver(s).
+* This is in turn a modified version of Russ Hughes [st7789py](https://github.com/russhughes/st7789py_mpy) driver(s).
 * There are a number of additional drawing and font handling features provided for this that can make use for GUI and large displays more convenient
   * I do not document the additional drawing methods, see the documentation for this in the site above and the MPDisplay site. 
 * Very heavy on memory; pretty much requires having PSRAM enabled
@@ -80,7 +80,7 @@ display = st7789.ST7789_SPI(spi,
 ```
 ### I80 Bus  (aka i8080 bus)
 The I80 bus driver needs to be added to your project; to do this simply copy the whole `i80` folder to the root of your device.
-- This bus driver is rather nice; it was [written by @russhughes](https://forum.lvgl.io/t/micropython-display-drivers-part-2/14131/21) and the home repo for it is [here](https://github.com/bdbarnett/mpdisplay/tree/main/drivers/bus). I use a older version bundled into a single library.
+- This bus driver is rather nice; it was [written by @bdbarnett](https://forum.lvgl.io/t/micropython-display-drivers-part-2/14131/21) and the home repo for it is [here](https://github.com/bdbarnett/mpdisplay/tree/main/drivers/bus). I use a older version bundled into a single library.
 
 Init with:
 ```python
