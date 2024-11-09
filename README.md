@@ -9,7 +9,7 @@ They have been well tested on 3 devices now; a T-Display Touch (ESP32-S3, I80), 
 Note: *If you have a 240x24 or 320x170 display these drivers really *need* a firmware with SPIRAM (PSRAM) enabled; these are available in the main download site where the generic firmwares have additional SPIRAM builds available on the same page.*
 *Although these drivers will just about load and run without it, the framebuffer will be using over 100K of memory; there simply is not enough left over for any meaningful program.*
 
-[![Demos](doc/tdisplay2.jpg)](doc/tdisplay2.jpg)
+[![Demos](doc/tdisplay2.jpg)](doc/tdisplay-cover.jpg)
 * Photos dont really do justice to how good the IPS panel on the T-Display looks in reality.https://github.com/russhughes/st7789_mpy
 
 # There are better drivers available; but they require custom firmware
@@ -148,3 +148,6 @@ if `brightness` evaluates to a boolean the backlight will be set to either `0` (
 If the pin is a PWM pin you can set `brightness` to a float between `0` and `1.0` to set the backlight brightness (PWM factor).
 
 The `bright` init argument allows the initial backlight state (brightness; bool or float) to be defined.
+
+[![Demos](doc/loose-display.jpg)](doc/loose-display-cover.jpg)
+* Again; photographing these displays is hard; this also looks better in real life.
