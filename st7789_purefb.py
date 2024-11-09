@@ -169,7 +169,7 @@ class ST7789(framebuf.FrameBuffer):
     """
     ST7789 driver class base
     """
-    def __init__(self, width, height, backlight, bright, rotation, color_order, swap_bytes):
+    def __init__(self, width, height, backlight, bright, rotation, color_order, reverse_bytes_in_word):
         """
         Initialize display and backlight.
         """
@@ -190,7 +190,7 @@ class ST7789(framebuf.FrameBuffer):
                 f"Unsupported {width}x{height} display. Supported displays: {supported_displays}")
         # Colors
         self.color_order = color_order
-        self.needs_swap = swap_bytes
+        self.needs_swap = reverse_bytes_in_word
         # init the st7789
         self.init_cmds = _ST7789_INIT_CMDS
         self.hard_reset()
@@ -393,8 +393,8 @@ class ST7789_I80(ST7789):
         color_order (int):
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
-        swap_bytes (bool):
-          - Leave enabled, the st7789 uses LSB byte order for color words
+        reverse_bytes_in_word (bool):
+          - Enable if the display uses LSB byte order for color words
     """
     def __init__(
         self,
@@ -407,12 +407,12 @@ class ST7789_I80(ST7789):
         bright=1,
         rotation=0,
         color_order=BGR,
-        swap_bytes=True,
+        reverse_bytes_in_word=True,
     ):
         self.i80 = i80
         self.reset = reset
         self.cs = cs
-        super().__init__(width, height, backlight, bright, rotation, color_order, swap_bytes)
+        super().__init__(width, height, backlight, bright, rotation, color_order, reverse_bytes_in_word)
 
     def _write(self, cmd=None, data=None):
         """I80 bus write to device: command and data."""
@@ -463,8 +463,8 @@ class ST7789_SPI(ST7789):
         color_order (int):
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
-        swap_bytes (bool):
-          - Leave enabled, the st7789 uses LSB byte order for color words
+        reverse_bytes_in_word (bool):
+          - Enable if the display uses LSB byte order for color words
     """
     def __init__(
         self,
@@ -478,13 +478,13 @@ class ST7789_SPI(ST7789):
         bright=1,
         rotation=0,
         color_order=BGR,
-        swap_bytes=True,
+        reverse_bytes_in_word=True,
     ):
         self.spi = spi
         self.reset = reset
         self.cs = cs
         self.dc = dc
-        super().__init__(width, height, backlight, bright, rotation, color_order, swap_bytes)
+        super().__init__(width, height, backlight, bright, rotation, color_order, reverse_bytes_in_word)
 
     def _write(self, command=None, data=None):
         """SPI write to the device: commands and data."""

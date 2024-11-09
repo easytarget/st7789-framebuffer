@@ -158,44 +158,43 @@ _BIT0 = const(0x01)
 # fmt: off
 
 # Rotation tables
-#   (madctl, width, height, xstart, ystart, needs_swap)[rotation % 4]
+#   (madctl, width, height, xstart, ystart)[rotation % 4]
 
 _DISPLAY_240x320 = (
-    (0x00, 240, 320, 0, 0, False),
-    (0x60, 320, 240, 0, 0, False),
-    (0xc0, 240, 320, 0, 0, False),
-    (0xa0, 320, 240, 0, 0, False))
+    (0x00, 240, 320, 0, 0),
+    (0x60, 320, 240, 0, 0),
+    (0xc0, 240, 320, 0, 0),
+    (0xa0, 320, 240, 0, 0))
 
 _DISPLAY_170x320 = (
-    (0x00, 170, 320, 35, 0, False),
-    (0x60, 320, 170, 0, 35, False),
-    (0xc0, 170, 320, 35, 0, False),
-    (0xa0, 320, 170, 0, 35, False))
+    (0x00, 170, 320, 35, 0),
+    (0x60, 320, 170, 0, 35),
+    (0xc0, 170, 320, 35, 0),
+    (0xa0, 320, 170, 0, 35))
 
 _DISPLAY_240x240 = (
-    (0x00, 240, 240,  0,  0, False),
-    (0x60, 240, 240,  0,  0, False),
-    (0xc0, 240, 240,  0, 80, False),
-    (0xa0, 240, 240, 80,  0, False))
+    (0x00, 240, 240,  0,  0),
+    (0x60, 240, 240,  0,  0),
+    (0xc0, 240, 240,  0, 80),
+    (0xa0, 240, 240, 80,  0))
 
 _DISPLAY_135x240 = (
-    (0x00, 135, 240, 52, 40, False),
-    (0x60, 240, 135, 40, 53, False),
-    (0xc0, 135, 240, 53, 40, False),
-    (0xa0, 240, 135, 40, 52, False))
+    (0x00, 135, 240, 52, 40),
+    (0x60, 240, 135, 40, 53),
+    (0xc0, 135, 240, 53, 40),
+    (0xa0, 240, 135, 40, 52))
 
 _DISPLAY_128x128 = (
-    (0x00, 128, 128, 2, 1, False),
-    (0x60, 128, 128, 1, 2, False),
-    (0xc0, 128, 128, 2, 1, False),
-    (0xa0, 128, 128, 1, 2, False))
+    (0x00, 128, 128, 2, 1),
+    (0x60, 128, 128, 1, 2),
+    (0xc0, 128, 128, 2, 1),
+    (0xa0, 128, 128, 1, 2))
 
 # index values into rotation table
 _WIDTH = const(0)
 _HEIGHT = const(1)
 _XSTART = const(2)
 _YSTART = const(3)
-_NEEDS_SWAP = const(4)
 
 # Supported displays (physical width, physical height, rotation table)
 _SUPPORTED_DISPLAYS = (
@@ -241,7 +240,7 @@ def color565(red, green=0, blue=0):
 
 def swap_bytes(color):
     """
-    this just flips the left and right byte in the 16 bit color.
+    Flips the left and right bytes in the 16 bit color word.
     """
     return ((color & 255) << 8) + (color >> 8)
 
@@ -383,31 +382,26 @@ class ST7789:
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
 
-        custom_init (tuple): custom initialization commands
+        reverse_bytes_in_word (bool)
 
-          - ((b'command', b'data', delay_ms), ...)
-
-        custom_rotations (tuple): custom rotation definitions
-
-          - ((width, height, xstart, ystart, madctl, needs_swap), ...)
-
+          - False: color words are MSB
+          - True:  color words are LSB
     """
 
     def __init__(
         self,
         width,
         height,
-        backlight=None,
-        bright=1,
-        rotation=0,
-        color_order=BGR,
-        custom_init=None,
-        custom_rotations=None,
+        backlight,
+        bright,
+        rotation,
+        color_order,
+        reverse_bytes_in_word,
     ):
         """
         Initialize display.
         """
-        self.rotations = custom_rotations or self._find_rotations(width, height)
+        self.rotations = self._find_rotations(width, height)
         if not self.rotations:
             supported_displays = ", ".join(
                 [f"{display[0]}x{display[1]}" for display in _SUPPORTED_DISPLAYS]
@@ -431,7 +425,8 @@ class ST7789:
         self._pwm_bl = True
         self._rotation = rotation % 4
         self.color_order = color_order
-        self.init_cmds = custom_init or _ST7789_INIT_CMDS
+        self.needs_swap = reverse_bytes_in_word
+        self.init_cmds = _ST7789_INIT_CMDS
         self.hard_reset()
         # yes, twice, once is not always enough
         self.init(self.init_cmds)
@@ -510,7 +505,6 @@ class ST7789:
             self.height,
             self.xstart,
             self.ystart,
-            self.needs_swap,
         ) = self.rotations[rotation]
 
         if self.color_order == BGR:
@@ -1243,8 +1237,8 @@ class ST7789_I80(ST7789):
         color_order (int):
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
-        custom_init: Custom init commands (for custom display hardware)
-        custom_rotations: Custom rotations (for custom display sizes)
+        reverse_bytes_in_word (bool):
+          - Enable if the display uses LSB byte order for color words
     """
     def __init__(
         self,
@@ -1257,15 +1251,12 @@ class ST7789_I80(ST7789):
         bright=1,
         rotation=0,
         color_order=BGR,
-        custom_init=None,
-        custom_rotations=None,
-
+        reverse_bytes_in_word=True,
     ):
         self.i80 = i80
         self.reset = reset
         self.cs = cs
-        super().__init__(width, height, backlight, bright, rotation, color_order,
-                         custom_init, custom_rotations)
+        super().__init__(width, height, backlight, bright, rotation, color_order, reverse_bytes_in_word)
 
     def _write(self, cmd=None, data=None):
         """I80 bus write to device: command and data."""
@@ -1316,8 +1307,8 @@ class ST7789_SPI(ST7789):
         color_order (int):
           - RGB: Red, Green Blue, default
           - BGR: Blue, Green, Red
-        custom_init: Custom init commands (for custom display hardware)
-        custom_rotations: Custom rotations (for custom display sizes)
+        reverse_bytes_in_word (bool):
+          - Enable if the display uses LSB byte order for color words
     """
     def __init__(
         self,
@@ -1331,15 +1322,13 @@ class ST7789_SPI(ST7789):
         bright=1,
         rotation=0,
         color_order=BGR,
-        custom_init=None,
-        custom_rotations=None,
+        reverse_bytes_in_word=True,
     ):
         self.spi = spi
         self.reset = reset
         self.cs = cs
         self.dc = dc
-        super().__init__(width, height, backlight, bright, rotation, color_order,
-                         custom_init, custom_rotations)
+        super().__init__(width, height, backlight, bright, rotation, color_order, reverse_bytes_in_word)
 
     def _write(self, command=None, data=None):
         """SPI write to the device: commands and data."""
