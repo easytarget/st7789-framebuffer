@@ -16,7 +16,7 @@ from i80bus import I80Bus
     You will need to adjust the pins and dimensions as necesscary for your project.
 """
 
-# Power and RD pins not used but need setting to correct values
+# Power and RD pins are not actively used by the driver but need an initial setting applied
 display_power_pin     = Pin(15, Pin.OUT, value = 1)
 display_rd_pin        = Pin(9,  Pin.OUT, value = 1)
 # Pins used by the driver
