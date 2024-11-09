@@ -12,14 +12,15 @@ Note: *If you have a 240x24 or 320x170 display these drivers really *need* a fir
 [![Demos](doc/tdisplay-cover.jpg)](doc/tdisplay2.jpg)
 * Photos dont really do justice to how good the IPS panel on the T-Display looks in reality.
 
-# There are better drivers available; but they require custom firmware
-In particular: https://github.com/russhughes/s3lcd is a excellent driver; especially if you have a i80 bus.
-- Because it uses the bus properly it is very fast. far faster than the drivers in this repo.
-
-If you need speed or lots of free memory; and using (possibly compiling) a custom firmware is practical for you, use that driver and ignore this page.
-- I'm being serious; The drvers  gve here were made for my own *very simple projects* and they do not scale very well for more complex use.
 - @russhughes has a good non-framebuffer driver here: https://github.com/russhughes/st7789_mpy 
+
+# There are better drivers available; but they require custom firmware
+If you need speed or lots of free memory; and using a custom firmware is practical for you:
+- https://github.com/russhughes/s3lcd is a excellent driver; if you have a i80 bus.
+  - Because it uses the bus hardware properly it is very fast. far faster than the software drivers in this repo.
 - [LVGL](https://docs.lvgl.io/master/details/integration/bindings/micropython.html) and other projects also have good st7789 support via frmware drivers; Russ has also contributed to those; if you are building a full GUI check them out.
+
+I'm being serious; The drvers given here were made for my own *very simple* projects, and they do not scale very well for more complex use.
 
 # This repo actually has TWO drivers:
 
