@@ -4,6 +4,8 @@
 
 These Drivers have methods for *both* **`SPI`** and **`I80`** (`I8080`) busses, using the inbuilt MicroPython driver for `spi` or the `I80` library from Brad Barnett's [mpdisplay](https://github.com/bdbarnett/mpdisplay).
 
+They were (originally) created to be used with my [microPyEZfonts](https://github.com/easytarget/microPyEZfonts) system in an existing project that I was adapting with a vibrant color display to replace a faded monochrome OLED one.
+
 They have been well tested on 3 devices now; a T-Display Touch (ESP32-S3, I80), a T-Watch 2020 (ESP32, SPI) and a loose IPS display module attached to a ESP32-C3 devboard via SPI.
 
 Note: *If you have a 240x24 or 320x170 display these drivers really *need* a firmware with SPIRAM (PSRAM) enabled; these are available in the main download site where the generic firmwares have additional SPIRAM builds available on the same page.*
@@ -104,7 +106,7 @@ display = st7789.ST7789_I80(i80,
 ```
 ### Init() Arguments
 The *only* difference between SPI and I80 init is that for SPI the `DC` pin can be supplied, but is not defined for I80 use.
-```python
+```console
         spi OR i80 (bus): bus object **Required**
         width (int): display width   **Required**
         height (int): display height **Required**
@@ -130,23 +132,22 @@ The *only* difference between SPI and I80 init is that for SPI the `DC` pin can 
 ## Methods
 After init you draw on the framebuffer as appropriate using the stock framebuffer [methods](https://docs.micropython.org/en/latest/library/framebuf.html#drawing-primitive-shapes) (and extended methods for `fb_plus`)
 
-You then need to call:
+To write the framebuffer contents to the display you need to call:
 ```python
 display.show()
 ```
-To write the framebuffer contents to the display.
 
 You can also use:
 ```python
 display.rotation(int; 0->3)
 ```
 This will dynamically change the screen rotation (orientation) using the same values as documented for `init()`.
-- If your display width and height differ you cannot rotate by 90 degrees, only by a full half turn.
+-  You cannot swap between portrait and landscape modes. If the display width and height differ you can only rotate by a full half turn.
 
 Finally there is a `display.inversion_mode(bool)` that can invert the display colors resulting in a 'negative' image; probably not very useful.
 
 ## Backlight PWM control
-The `backlight` pin is optional; if `None` no attempt will be made to use it and you will need to do the control in your app, etc.
+The `backlight` pin is optional; if value is `None` no attempt will be made to use it.
 
 Control it via the `backlight` method:
 ```python
@@ -154,9 +155,9 @@ display.backlight(brightness)
 ```
 if `brightness` evaluates to a boolean the backlight will be set to either `0` (off) or `1` (on) as appropriate.
 
-If the pin is a PWM pin you can set `brightness` to a float between `0` and `1.0` to set the backlight brightness (PWM factor).
+If using a PWM pin you can set `brightness` to a float between `0` and `1.0` to set the backlight brightness (PWM factor).
 
-The `bright` init argument allows the initial backlight state (brightness; bool or float) to be defined.
+The `bright` *init()* argument allows the initial backlight state (brightness; bool/float) to be defined.
 
 ## Demos
 There are several demo examples; please make sure to read the comments in them.
