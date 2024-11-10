@@ -12,17 +12,25 @@ Note: *If you have a 240x24 or 320x170 display these drivers really *need* a fir
 [![Demos](doc/tdisplay-cover.jpg)](doc/tdisplay2.jpg)
 * Photos dont really do justice to how good the IPS panel on the T-Display looks in reality.
 
-- @russhughes has a good non-framebuffer driver here: https://github.com/russhughes/st7789_mpy 
+There is a history to this driver, and the micropython st7789 drivers in general..
+- @devbis originally published a pure micropython driver supporting a limited range of displays here: https://github.com/devbis/st7789py_mpy/
+- They then refined that into a fast firmware based driver: https://github.com/devbis/st7789_mpy
+- @russhughes took this and extended it for other screens and features at: https://github.com/russhughes/st7789_mpy; they have actively maintained and developed that driver, and it is a good choice for SPI based displays.
+- In parallel to this @bdbarnett was developing https://github.com/bdbarnett/mpdisplay; which incorporates elements from the the above drivers as part of a much larger, more versatile and generally excellent display subsystem supporting many different graphics hardware combos (not just st7789); it also has touchscreen, multiple font systems and graphics primative support.
+- More recently the ESP32-S3 arrived with hardware I8080 bus support, as well as some devices that use this; eg the Lilygo T-Display. Russ Hughes then developed https://github.com/russhughes/s3lcd, a hardware driver that takes advantage of this. It requires custom firmware, but I have tested it and it is fast.. very fast.
+- Work from the above has also landed in the micropython LVGL ecosystem.
+- And, filling the slots in-between, others have also developed and published variations on this theme, such as I do here.
 
-# There are better drivers available; but they require custom firmware
-If you need speed or lots of free memory; and using a custom firmware is practical for you:
-- https://github.com/russhughes/s3lcd is a excellent driver; if you have a i80 bus.
-  - Because it uses the bus hardware properly it is very fast. far faster than the software drivers in this repo.
-- [LVGL](https://docs.lvgl.io/master/details/integration/bindings/micropython.html) and other projects also have good st7789 support via frmware drivers; Russ has also contributed to those; if you are building a full GUI check them out.
-
+# There are better drivers available; but they require custom firmware or have a lot of overhead.
 I'm being serious; The drvers given here were made for my own *very simple* projects, and they do not scale very well for more complex use.
 
-# This repo actually has TWO drivers:
+If you need speed or lots of free memory; and using a custom firmware is practical for you:
+- [S3LCD](https://github.com/russhughes/s3lcd) is an excellent driver; if you have a i80 bus.
+- [LVGL](https://docs.lvgl.io/master/details/integration/bindings/micropython.html) and other projects also have good st7789 support via frmware drivers; Russ has also contributed to those; if you are building a full GUI check them out.
+
+[MPDisplay](https://github.com/bdbarnett/mpdisplay) does not (necesscarily) need custom firmware, and supports the I80 bus version of the st7789. It also has touchsecren drivers and lots of font utilities incorporated into it. I have used it and it works very well, but is a bit complex to set up and understand. And you may be installing a lot of code for feature you will never use.
+
+# This repo actually has TWO easy-to-use drivers:
 
 Both support SPI and I80 busses; one is smaller and more basic than the other.
 - support for PWM backlight is also added to both
