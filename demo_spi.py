@@ -10,7 +10,10 @@
 """
 
 from machine import Pin, PWM, SPI
+
 """
+    Before running copy the entire /demo_extra folder to your device root
+
     This demo defaults to Pin and Display settings for the LilyGo T-Watch 2020 (v3)
     You will need to adjust the pins and dimensions as necesscary for your project.
 """
@@ -26,12 +29,13 @@ display_backlight_pin = Pin(15, Pin.OUT, value = 0)
 display_backlight_pwm = PWM(display_backlight_pin,
                             duty_u16 = int(0x0))
 
-# T-Watch 2020 specific:
-# - On this hardware you must enable and set an external Power Manager Unit to
-#   provide screen power.
-# - T-Watch users need to uncomment this section.
-#   Everybody else can ignore or delete it as needed
-#
+"""
+    T-Watch 2020 specific:
+    - On this hardware you must enable and set an external Power Manager Unit to
+      provide screen power.
+    - T-Watch users need to uncomment this section.
+      Everybody else can ignore or delete it as needed
+"""
 #from sys import path
 #path.append('demo_extra')
 #import axp202c

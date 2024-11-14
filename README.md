@@ -161,7 +161,7 @@ The `bright` *init()* argument allows the initial backlight state (brightness; b
 
 ## Demos
 There are several demo examples; please make sure to read the comments in them.
-- See also the 'marquee' and 'nametag' examples are in the `doc` folder.
+- See also the 'marquee' and 'nametag' examples in the `doc` folder.
 
 [![Demos](doc/loose-display-cover.jpg)](doc/loose-display.jpg)
 * Again; photographing these displays is hard; this also looks better in real life.

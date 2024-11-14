@@ -12,11 +12,13 @@
 from machine import Pin, PWM
 from i80bus import I80Bus
 """
+    Before running copy the entire ./demo_extra folder to your device root
+
     This demo defaults to Pin and Display settings for the LilyGo T-Display Touch
     You will need to adjust the pins and dimensions as necesscary for your project.
 """
 
-# Power and RD pins are not actively used by the driver but need an initial setting applied
+# Power and RD pins are not actively used by the driver but need an initial state applied for the display to work.
 display_power_pin     = Pin(15, Pin.OUT, value = 1)
 display_rd_pin        = Pin(9,  Pin.OUT, value = 1)
 # Pins used by the driver

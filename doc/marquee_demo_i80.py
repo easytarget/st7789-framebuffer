@@ -21,8 +21,15 @@ from time import sleep, ticks_ms
 from machine import Timer
 from micropython import schedule
 
-# fonts
+"""
+    Before running copy the entire /demo_extra folder to your device root
+
+    This demo defaults to Pin and Display settings for the LilyGo T-Watch 2020 (v3)
+    You will need to adjust the pins and dimensions as necesscary for your project.
+"""
 path.append('demo_extra')
+
+# Fonts
 from ezFBmarquee import ezFBmarquee
 from ezFBfont import ezFBfont
 import ezFBfont_17_helvR12_ascii as font1

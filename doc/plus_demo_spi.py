@@ -18,6 +18,8 @@
 from machine import Pin, PWM, SPI
 from time import sleep_ms, localtime
 """
+    Before running copy the entire ./demo_extra folder to your device root
+
     This demo defaults to Pin and Display settings for a loose SPI display
     connected to a ESP32-C3 on the pins below.
 """
@@ -76,6 +78,8 @@ class palette():
 
 print('init done, running demo')
 from demo_extra import ezFBfont
+# The above import will add ./demo_extra to the path
+# we can now import fonts directly from there
 import ezFBfont_spleen_32x64_ascii_60 as spleen_f
 import ezFBfont_helvR24_ascii_34 as helv_f
 import ezFBfont_7_Seg_41x21_0x0_0x39_37 as bigseven_f
